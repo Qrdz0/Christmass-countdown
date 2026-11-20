@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown to Christmas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0d14;
+            --text-main: #f8fafc;
+            --text-muted: #64748b;
+            --accent: #38bdf8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 50% 50%, #111827 0%, #0a0d14 70%);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 2rem;
+            color: var(--text-muted);
+            margin-bottom: 4rem;
+            letter-spacing: 2px;
+        }
+
+        .countdown {
+            display: flex;
+            gap: 4rem;
+            align-items: baseline;
+        }
+
+        .time-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 90px;
+        }
+
+        .time-value {
+            font-size: 6rem;
+            font-weight: 300;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -2px;
+        }
+
+        .time-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+
+        .time-block:last-child .time-value {
+            color: var(--accent);
+        }
+        .time-block:last-child .time-label {
+            color: var(--accent);
+        }
+
+        .music-player {
+            position: fixed;
+            bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 99px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .music-player:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--accent);
+        }
+
+        .music-icon {
+            width: 16px;
+            height: 16px;
+            fill: var(--text-main);
+            transition: fill 0.3s;
+        }
+
+        .music-player:hover .music-icon {
+            fill: var(--accent);
+        }
+
+        .music-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 15px;
+            right: 20px;
+            font-size: 10px;
+            color: #334155;
+            font-family: 'Inter', sans-serif;
+        }
+
+        @media (max-width: 768px) {
+            .countdown {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 2rem;
+            }
+            .time-block {
+                min-width: 100px;
+            }
+            .time-value {
+                font-size: 4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Until Christmas</h1>
+        
+        <div class="countdown">
+            <div class="time-block">
+                <div class="time-value" id="days">00</div>
+                <div class="time-label">Days</div>
+            </div>
+            <div class="time-block">
+                <div class="time-value" id="hours">00</div>
+                <div class="time-label">Hours</div>
+            </div>
+            <div class="time-block">
+                <div class="time-value" id="minutes">00</div>
+                <div class="time-label">Minutes</div>
+            </div>
+            <div class="time-block">
+                <div class="time-value" id="seconds">00</div>
+                <div class="time-label">Seconds</div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop>
+        <!-- Replace this URL with a local file like "music.mp3" if you download your own -->
+        <source src="https://cdn.pixabay.com/audio/2022/11/22/audio_1e98d534c8.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="music-player" id="music-btn" onclick="toggleMusic()">
+        <svg class="music-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+        <span class="music-text" id="music-text">Play Music</span>
+    </div>
+
+    <div class="footer">&copy; 2026 VibeCode Labs. All rights reserved.</div>
+
+    <script>
+        const currentYear = new Date().getFullYear();
+        let targetDate = new Date(`December 25, ${currentYear} 00:00:00`).getTime();
+
+        if (new Date().getTime() > targetDate) {
+            targetDate = new Date(`December 25, ${currentYear + 1} 00:00:00`).getTime();
+        }
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            if (distance < 0) {
+                document.querySelector('.container').innerHTML = "<h1>Merry Christmas.</h1>";
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerText = String(days).padStart(2, '0');
+            document.getElementById("hours").innerText = String(hours).padStart(2, '0');
+            document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
+            document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        const audio = document.getElementById('bg-music');
+        const musicText = document.getElementById('music-text');
+        let isPlaying = false;
+
+        function toggleMusic() {
+            if (isPlaying) {
+                audio.pause();
+                musicText.innerText = "Play Music";
+            } else {
+                audio.volume = 0;
+                audio.play();
+                let vol = 0;
+                const fadeAudio = setInterval(() => {
+                    if (vol < 0.5) { 
+                        vol += 0.05;
+                        audio.volume = vol;
+                    } else {
+                        clearInterval(fadeAudio);
+                    }
+                }, 200);
+                
+                musicText.innerText = "Pause Music";
+            }
+            isPlaying = !isPlaying;
+        }
+    </script>
+</body>
+</html>
